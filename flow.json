@@ -1,0 +1,31 @@
+{
+	"contracts": {
+		"FungibleToken": "cadence\\contracts\\FungibleToken.cdc",
+		"Lumi": "cadence\\contracts\\Lumi.cdc",
+		"TestToken": "cadence\\contracts\\TestToken.cdc"
+	},
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"default": {
+			"address": "eb179c27144f783c",
+			"key": "266bae592b15a735956da4619ae7d2a8fc2bc0644dd7f5fd5291b56ec6b1b6d4"
+		},
+		"emulator-account": {
+			"address": "f8d6e0586b0a20c7",
+			"key": "6d12eebfef9866c9b6fa92b97c6e705c26a1785b1e7944da701fc545a51d4673"
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"default": [
+				"FungibleToken",
+				"Lumi",
+				"TestToken"
+			]
+		}
+	}
+}
