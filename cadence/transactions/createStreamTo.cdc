@@ -2,20 +2,23 @@ import Lumi from "Lumi"
 import FungibleToken from "FungibleToken"
 import TestToken from "TestToken"
 
-transaction(receiver: Address){
+transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix64){
     prepare(acct: AuthAccount){
         var currentTimeStamp = getCurrentBlock().timestamp;
-        var vault <- TestToken.createVaultTEST(amount: 500.0)
 
         var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
         var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
+        var ownerProviderCapability = acct.borrow<&TestToken.Vault>(from: /storage/MainVault)
+        		?? panic("Could not borrow reference to the owner's Vault!")
+
+        var depositVault <- ownerProviderCapability.withdraw(amount: amount);
         
         var streamResource <- Lumi.createStream(
-            streamVault: <- vault, 
+            streamVault: <- depositVault, 
             receiverCapability: receiverCapability, 
             ownerReceiverCapability: ownerReceiverCapability,
-            startTime: currentTimeStamp, 
-            endTime: currentTimeStamp+10000.0)
+            startTime: startTime, 
+            endTime: endTime)
 
         var streamCollection <- Lumi.createEmptyCollection()
         streamCollection.deposit(source: <- streamResource)
@@ -31,3 +34,4 @@ transaction(receiver: Address){
 
 
 }
+ 
