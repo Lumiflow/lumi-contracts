@@ -10,6 +10,7 @@ access(all) contract Lumi {
 
     pub fun createStream(
         streamVault: @FungibleToken.Vault,
+        tag: String,
         receiverCapability: Capability<&{FungibleToken.Receiver}>,
         ownerReceiverCapability: Capability<&{FungibleToken.Receiver}>,
         startTime: UFix64,
@@ -17,6 +18,7 @@ access(all) contract Lumi {
     ): @StreamSource{
         var source <- create StreamSource(
             vault: <- streamVault, 
+            tag: tag,
             receiverCapability: receiverCapability, 
             ownerReceiverCapability: ownerReceiverCapability,
             startTime: startTime,
@@ -37,13 +39,15 @@ access(all) contract Lumi {
         pub(set) var startTime: UFix64
         pub(set) var endTime: UFix64
         pub var uuid: UInt64
+        pub var tag: String
 
-        init(startTime: UFix64, endTime: UFix64, total: UFix64, uuid: UInt64) {
+        init(startTime: UFix64, endTime: UFix64, total: UFix64, uuid: UInt64, tag: String) {
             self.startTime = startTime
             self.endTime = endTime
             self.total = total
             self.claimed = 0.0
             self.uuid = uuid
+            self.tag = tag
         }
 
         pub fun getAvailable(at: UFix64): UFix64{            
@@ -88,6 +92,7 @@ access(all) contract Lumi {
 
         init (
             vault: @FungibleToken.Vault,
+            tag: String,
             receiverCapability: Capability<&{FungibleToken.Receiver}>,
             ownerReceiverCapability: Capability<&{FungibleToken.Receiver}>,
             startTime: UFix64,
@@ -95,7 +100,7 @@ access(all) contract Lumi {
         ) {
             self.ownerReceiverCapability = ownerReceiverCapability
             self.receiverCapability = receiverCapability
-            self.info = Stream(startTime: startTime, endTime: endTime, total: vault.balance, uuid: self.uuid)
+            self.info = Stream(startTime: startTime, endTime: endTime, total: vault.balance, uuid: self.uuid, tag: tag)
             self.vault <- vault
         }
 

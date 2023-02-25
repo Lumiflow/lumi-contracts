@@ -2,7 +2,7 @@ import Lumi from "Lumi"
 import FungibleToken from "FungibleToken"
 import TestToken from "TestToken"
 
-transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix64){
+transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix64, tag: String){
     prepare(acct: AuthAccount){
         var currentTimeStamp = getCurrentBlock().timestamp;
 
@@ -15,6 +15,7 @@ transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix6
         
         var streamResource <- Lumi.createStream(
             streamVault: <- depositVault, 
+            tag: tag,
             receiverCapability: receiverCapability, 
             ownerReceiverCapability: ownerReceiverCapability,
             startTime: startTime, 
@@ -34,4 +35,3 @@ transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix6
 
 
 }
- 
