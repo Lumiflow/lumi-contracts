@@ -36,12 +36,14 @@ access(all) contract Lumi {
         pub(set) var total: UFix64
         pub(set) var startTime: UFix64
         pub(set) var endTime: UFix64
+        pub var uuid: UInt64
 
-        init(startTime: UFix64, endTime: UFix64, total: UFix64) {
+        init(startTime: UFix64, endTime: UFix64, total: UFix64, uuid: UInt64) {
             self.startTime = startTime
             self.endTime = endTime
             self.total = total
             self.claimed = 0.0
+            self.uuid = uuid
         }
 
         pub fun getAvailable(at: UFix64): UFix64{            
@@ -65,13 +67,15 @@ access(all) contract Lumi {
         pub var info: Stream
         pub var vault: @FungibleToken.Vault 
 
-        pub fun claimAvailable(){
+        pub fun claimAvailable() : UFix64{
             var currentTimeStamp = getCurrentBlock().timestamp
             var availableAmount = self.info.getAvailable(at: currentTimeStamp)
 
             self.info.claimed = self.info.claimed + availableAmount
             var vault <- self.vault.withdraw(amount: availableAmount)
             self.receiverCapability.borrow()!.deposit(from: <- vault)
+
+            return availableAmount
         }
 
         pub fun getAvailable(at: UFix64): UFix64{            
@@ -91,7 +95,7 @@ access(all) contract Lumi {
         ) {
             self.ownerReceiverCapability = ownerReceiverCapability
             self.receiverCapability = receiverCapability
-            self.info = Stream(startTime: startTime, endTime: endTime, total: vault.balance)
+            self.info = Stream(startTime: startTime, endTime: endTime, total: vault.balance, uuid: self.uuid)
             self.vault <- vault
         }
 
@@ -103,9 +107,9 @@ access(all) contract Lumi {
     pub resource SourceCollection: StreamInfoGetter, StreamClaimer {
         pub var myStreamSources: @{UInt64: StreamSource}
 
-        pub fun claimAvailable(id: UInt64){
+        pub fun claimAvailable(id: UInt64): UFix64{
             var stream <- self.myStreamSources.remove(key: id)!
-            stream.claimAvailable()
+            var amount = stream.claimAvailable()
 
             if(stream.info.claimed == stream.info.total){
                 destroy stream
@@ -113,6 +117,8 @@ access(all) contract Lumi {
             else{
                 self.myStreamSources[id] <-! stream
             }
+
+            return amount
         }
 
         pub fun getAvailable(id: UInt64, at: UFix64): UFix64{     
@@ -153,7 +159,7 @@ access(all) contract Lumi {
     }
 
     pub resource interface StreamClaimer {
-        pub fun claimAvailable(id: UInt64)
+        pub fun claimAvailable(id: UInt64): UFix64
     }
 
     pub init(){
