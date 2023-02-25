@@ -38,14 +38,16 @@ access(all) contract Lumi {
         pub(set) var total: UFix64
         pub(set) var startTime: UFix64
         pub(set) var endTime: UFix64
+        pub var to: Address
         pub var uuid: UInt64
         pub var tag: String
 
-        init(startTime: UFix64, endTime: UFix64, total: UFix64, uuid: UInt64, tag: String) {
+        init(startTime: UFix64, endTime: UFix64, total: UFix64, to: Address, uuid: UInt64, tag: String) {
             self.startTime = startTime
             self.endTime = endTime
             self.total = total
             self.claimed = 0.0
+            self.to = to
             self.uuid = uuid
             self.tag = tag
         }
@@ -69,7 +71,7 @@ access(all) contract Lumi {
         access(contract) let receiverCapability: Capability<&{FungibleToken.Receiver}>
         access(contract) let ownerReceiverCapability: Capability<&{FungibleToken.Receiver}>
         pub var info: Stream
-        pub var vault: @FungibleToken.Vault 
+        pub var vault: @FungibleToken.Vault
 
         pub fun claimAvailable() : UFix64{
             var currentTimeStamp = getCurrentBlock().timestamp
@@ -100,7 +102,7 @@ access(all) contract Lumi {
         ) {
             self.ownerReceiverCapability = ownerReceiverCapability
             self.receiverCapability = receiverCapability
-            self.info = Stream(startTime: startTime, endTime: endTime, total: vault.balance, uuid: self.uuid, tag: tag)
+            self.info = Stream(startTime: startTime, endTime: endTime, total: vault.balance, to: receiverCapability.address, uuid: self.uuid, tag: tag)
             self.vault <- vault
         }
 
