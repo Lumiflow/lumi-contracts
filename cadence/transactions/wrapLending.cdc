@@ -11,7 +11,7 @@ transaction(amount: UFix64){
 
         var lendAsset <- lendingAssetProvider.withdraw(amount: amount);
 
-        var vault <- PoolWrapper.wrap(to: acct.address, lendAsset: <- lendAsset)
+        var vault <- PoolWrapper.wrap(lendAsset: <- lendAsset)
 
 
         var ownerReceiverCapability = 

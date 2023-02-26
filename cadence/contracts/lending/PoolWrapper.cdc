@@ -100,7 +100,8 @@ pub contract PoolWrapper: FungibleToken {
         return <-create Vault(balance: 0.0)
     }
 
-    pub fun wrap(to: Address, lendAsset: @FungibleToken.Vault): @FungibleToken.Vault {
+    pub fun wrap(lendAsset: @FungibleToken.Vault): @FungibleToken.Vault {
+        var addr = self.account.address
         let externalPoolPublicRef = getAccount(LendingPool.poolAddress)
                 .getCapability<&{LendingInterfaces.PoolPublic}>(LendingConfig.PoolPublicPublicPath).borrow() 
                     ?? panic(
@@ -109,9 +110,9 @@ pub contract PoolWrapper: FungibleToken {
                             err: LendingError.ErrorCode.CANNOT_ACCESS_POOL_PUBLIC_CAPABILITY
                         ) 
                     )
-        var balanceBefore = externalPoolPublicRef.getAccountLpTokenBalanceScaled(account: to)
-        LendingPool.supply(supplierAddr: to, inUnderlyingVault: <- lendAsset)
-        var balanceAfter = externalPoolPublicRef.getAccountLpTokenBalanceScaled(account: to)
+        var balanceBefore = externalPoolPublicRef.getAccountLpTokenBalanceScaled(account: addr)
+        LendingPool.supply(supplierAddr: addr, inUnderlyingVault: <- lendAsset)
+        var balanceAfter = externalPoolPublicRef.getAccountLpTokenBalanceScaled(account: addr)
         return <-create Vault(balance: LendingConfig.ScaledUInt256ToUFix64(balanceAfter - balanceBefore))
     }
 
