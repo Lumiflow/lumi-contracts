@@ -14,25 +14,23 @@ transaction(amount: UFix64){
         var vault <- PoolWrapper.wrap(lendAsset: <- lendAsset)
 
 
-        var ownerReceiverCapability = 
-            acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/poolWrapperReceiver)
+        var ownerVault = acct.borrow<&PoolWrapper.Vault>(from: /storage/poolWrapper)
 
-        if(ownerReceiverCapability == nil){
-            var vault <- PoolWrapper.createEmptyVault()
-            acct.save<@FungibleToken.Vault>(<-vault, to: /storage/poolWrapper)
+        if(ownerVault == nil){
+            var emptyVault <- PoolWrapper.createEmptyVault()
+            acct.save<@FungibleToken.Vault>(<-emptyVault, to: /storage/poolWrapper)
 
             // Create a public Receiver capability to the Vault
 		    let ReceiverRef =
-             acct.link<&FungibleToken.Vault{FungibleToken.Receiver, FungibleToken.Balance}>
-             (/public/poolWrapperReceiver, target: /storage/poolWrapper)
+                acct.link<&FungibleToken.Vault{FungibleToken.Receiver, FungibleToken.Balance}>
+                (/public/poolWrapperReceiver, target: /storage/poolWrapper)
 
-            ownerReceiverCapability = 
-            acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/poolWrapperReceiver)
+            ownerVault = acct.borrow<&PoolWrapper.Vault>(from: /storage/poolWrapper)
         }
 
         log("minted ".concat(vault.balance.toString()))
 
-        ownerReceiverCapability.borrow()!.deposit(from: <- vault)
+        ownerVault!.deposit(from: <- vault)
     }
 
     execute{
