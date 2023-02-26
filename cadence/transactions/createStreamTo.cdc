@@ -21,12 +21,19 @@ transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix6
             startTime: startTime, 
             endTime: endTime)
 
-        var streamCollection <- Lumi.createEmptyCollection()
-        streamCollection.deposit(source: <- streamResource)
 
-        acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/SourceCollection)
-        let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/MainGetter, target: /storage/SourceCollection)
-        let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/MainClaimer, target: /storage/SourceCollection)
+        var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/SourceCollection)
+
+        if(collectionRef == nil){
+            var streamCollection <- Lumi.createEmptyCollection()
+            acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/SourceCollection)
+            let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/MainGetter, target: /storage/SourceCollection)
+            let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/MainClaimer, target: /storage/SourceCollection)
+
+            collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/SourceCollection)
+        }
+
+        collectionRef!.deposit(source: <- streamResource)
     }
 
     execute{
